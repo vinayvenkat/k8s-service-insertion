@@ -1,0 +1,38 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: vinay-centos 
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: vv_proxy_test 
+        tier: backend
+        track: stable
+    spec:
+      containers:
+        - name: vv_proxy 
+          image: "vinayvenkat/vv_centos_net_utils"
+          command: ["sleep"]
+          args: ["60m"]
+          ports:
+            - name: http
+              containerPort: 15001 
+        - name: vinay-centos-2 
+          image: "vinayvenkat/vv_centos_net_utils"
+          command: ["sleep"]
+          args: ["60m"]
+          ports:
+            - name: http
+              containerPort: 8001
+     initContainers:
+     - name: init-proxy
+       image: vinayvenkat/vv_init_proxy
+       command: ['/home/init_iptables.sh']
+       args: ["-p", "15001", "-u", "1337"]
+       imagePullPolicy: "IfNotPresent"
+       securityContext:
+         capabilities:
+           add: ["NET_ADMIN"]
+  

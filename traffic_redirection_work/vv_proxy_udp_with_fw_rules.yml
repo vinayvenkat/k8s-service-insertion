@@ -1,0 +1,37 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: vinay-proxy-udp 
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: vv_proxy_test
+        tier: backend
+        track: stable
+    spec:
+      containers:
+        - name: vv-proxy-listener
+          image: "vinayvenkat/vv_centos_net_utils"
+          command: ["socat"]
+          args: ["-v", "PIPE", "udp-recvfrom:15001,fork"]
+          ports:
+            - name: http
+              containerPort: 15001
+        - name: vinay-centos-2-app
+          image: "vinayvenkat/vv_init_proxy:tools"
+          command: ["python"]
+          args: ["/home/udp_server.py", "--host", "127.0.0.1", "--port", "8000"]
+          ports:
+            - name: udpport 
+              containerPort: 8000
+      initContainers:
+        - name: init-proxy
+          image: vinayvenkat/vv_init_proxy:udp_script
+          command: ['/home/init_udp_iptables.sh']
+          args: ["-p", "15001", "-u", "1337"]
+          imagePullPolicy: "IfNotPresent"
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN"]

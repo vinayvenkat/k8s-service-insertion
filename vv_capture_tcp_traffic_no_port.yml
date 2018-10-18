@@ -1,0 +1,31 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: vinay-proxy-client-test 
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: vv_proxy_client_test
+        tier: backend
+        track: stable
+    spec:
+      containers:
+        - name: vv-proxy-listener
+          image: "vinayvenkat/vv_centos_master"
+          imagePullPolicy: "Always"
+          command: ["/home/scripts/socat_script.sh"]
+        - name: vinay-centos-2-app
+          image: "vinayvenkat/vv_centos_master"
+          command: ["python"]
+          args: ["/home/tcp_tools/tcp_server.py"]
+      initContainers:
+        - name: init-proxy
+          image: vinayvenkat/vv_init_proxy
+          command: ['/home/init_iptables.sh']
+          args: ["-p", "15001", "-u", "1337"]
+          imagePullPolicy: "Always"
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN"]

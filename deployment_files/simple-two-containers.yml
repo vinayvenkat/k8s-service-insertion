@@ -1,0 +1,28 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: vinay-centos 
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: vinay-centos 
+        tier: backend
+        track: stable
+    spec:
+      containers:
+        - name: vinay-centos-1 
+          image: "vinayvenkat/se_summit_2018"
+          command: ["sleep"]
+          args: ["15m"]
+          ports:
+            - name: http
+              containerPort: 80
+        - name: vinay-centos-2 
+          image: "vinayvenkat/se_summit_2018"
+          command: ["sleep"]
+          args: ["15m"]
+          ports:
+            - name: http
+              containerPort: 80

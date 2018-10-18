@@ -1,0 +1,21 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: hello
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: fw-proxy 
+        tier: backend
+        track: stable
+    spec:
+      containers:
+        - name: fw-proxy 
+          image: "vinayvenkat/vv_centos_net_utils"
+          command: ["sleep"]
+          args: ["60m"]
+          ports:
+            - name: http
+              containerPort: 7000 

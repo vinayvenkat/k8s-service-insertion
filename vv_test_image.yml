@@ -1,0 +1,47 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: vinay-image-test 
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: vv_proxy_client_test
+        tier: backend
+        track: stable
+    spec:
+      containers:
+        - name: data-proxy
+          image: vinayvenkat/cap_app_tcp:uid
+          command: ['socat']
+          args: ["-v","TCP4-LISTEN:15001,reuseaddr,fork", "TCP4:10.244.2.40:80"]
+          ports:
+            - name: http
+              containerPort: 15001
+        - name: vinay-centos-2-app
+          image: "vinayvenkat/vv_centos_net_utils"
+          terminationMessagePath: "/tmp/my-log"
+          terminationMessagePolicy: "FallbackToLogsOnError"
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN"]
+            runAsUser: 1001
+          command: ["python"]
+          args: ["-m", "SimpleHTTPServer", "8100"]
+      initContainers:
+        - name: init-proxy
+          image: vinayvenkat/cap_app_tcp:uid
+          command: ['/home/k8s/init_iptables_capture_outbound.sh']
+          args: ["-p", "15001", "-u", "1337"]
+          imagePullPolicy: "Always"
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN"]
+          volumeMounts:
+          - name: ip-volume
+            mountPath: /home/k8s
+      volumes:
+        - name: ip-volume
+          configMap: 
+            name: ip-scripts
